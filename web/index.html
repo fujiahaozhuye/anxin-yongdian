@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b6bcb">
+<title>安心用电 · 长辈居家用电安全与电费防诈助手</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">安</div>
+    <div class="brand-text">
+      <h1>安心用电</h1>
+      <p>长辈居家用电安全与电费防诈助手</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="btn-font" class="chip" title="放大字体">字大</button>
+    <button id="btn-voice" class="chip on" title="语音朗读开关">朗读 开</button>
+    <span id="engine-chip" class="chip status">连接中…</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-view="chat">对话</button>
+  <button class="tab" data-view="workflow">工作流</button>
+  <button class="tab" data-view="kb">知识库</button>
+  <button class="tab" data-view="test">自检</button>
+  <button class="tab" data-view="mine">我的</button>
+</nav>
+
+<main>
+
+<!-- ============ 对话 ============ -->
+<section class="view active" id="view-chat">
+  <div class="welcome" id="welcome">
+    <div class="welcome-hi">您好，我是安心用电 👋</div>
+    <p class="welcome-sub">家里跳闸、电费看不懂、买到不安全的电器、接到“欠费停电”的电话——都可以问我。我说的话可以点“朗读”听。</p>
+    <div class="quick-grid">
+      <button class="quick" data-q="我家跳闸了，怎么办？">
+        <span class="q-ico">⚡</span><span class="q-t">跳闸了怎么办</span><span class="q-d">分不清是过载还是漏电</span>
+      </button>
+      <button class="quick" data-q="刚才有人打电话说我家电费欠费386元，今天下午就要停电，让我马上转账，是真的吗？">
+        <span class="q-ico">📞</span><span class="q-t">催缴电费电话</span><span class="q-d">是不是骗人的</span>
+      </button>
+      <button class="quick" data-q="电暖器2000瓦，一天开6个小时，一个月电费大概多少？">
+        <span class="q-ico">🔥</span><span class="q-t">电暖器费电吗</span><span class="q-d">一个月要多少电费</span>
+      </button>
+      <button class="quick" data-q="普通10安插座，能插2500瓦的电暖器吗？">
+        <span class="q-ico">🔌</span><span class="q-t">插座够不够用</span><span class="q-d">会不会烧线</span>
+      </button>
+      <button class="quick" data-q="有人触电了，我应该怎么做？">
+        <span class="q-ico">🚑</span><span class="q-t">触电急救</span><span class="q-d">先救人还是先断电</span>
+      </button>
+      <button class="quick" data-q="我想给老人买个电暖器，怎么挑才安全？">
+        <span class="q-ico">🛒</span><span class="q-t">买电器怎么挑</span><span class="q-d">看哪些标志</span>
+      </button>
+    </div>
+    <div class="safety-strip">
+      <strong>紧急电话：</strong>
+      <a href="tel:120">120 急救</a>
+      <a href="tel:119">119 火警</a>
+      <a href="tel:110">110 报警</a>
+      <a href="tel:96110">96110 反诈</a>
+      <a href="tel:95598">95598 供电</a>
+    </div>
+  </div>
+
+  <div class="flowbar" id="flowbar" hidden>
+    <div class="flow-nodes" id="flow-nodes"></div>
+    <div class="flow-tip" id="flow-tip">正在处理…</div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+</section>
+
+<!-- ============ 工作流 ============ -->
+<section class="view" id="view-workflow">
+  <h2 class="sec-title">工作流编排（6 个节点，含知识库检索节点）</h2>
+  <p class="sec-desc">每次提问都会依次经过这 6 个节点。第 3 个节点是本作业要求的“知识库检索”节点，第 4 个节点挂载了 5 个自建插件。</p>
+  <div class="wf-list" id="wf-nodes"></div>
+
+  <h2 class="sec-title">插件（工具）清单</h2>
+  <p class="sec-desc">作业要求“至少接入 1 个插件”，本应用自建 5 个电气工程专用工具，由节点 4 自动调度。</p>
+  <div class="plugin-list" id="plugin-list"></div>
+
+  <h2 class="sec-title">最近一次执行轨迹</h2>
+  <pre class="trace" id="wf-trace">还没有执行记录，去「对话」里问一句吧。</pre>
+
+  <h2 class="sec-title">联调日志（实时）</h2>
+  <p class="sec-desc">服务端逐条记录的运行日志，包含每一次对话的意图、引擎、插件与耗时，用于联调与异常排查。</p>
+  <pre class="trace log" id="wf-log">加载中…</pre>
+</section>
+
+<!-- ============ 自检 ============ -->
+<section class="view" id="view-test">
+  <h2 class="sec-title">一键自检（功能测试记录）</h2>
+  <p class="sec-desc">用 12 条固定用例检查「意图识别 → 知识库检索 → 插件调度」三层是否正常。为避免大模型随机性影响判定，自检时生成层固定走本地模板引擎，因此结果可重复。</p>
+  <div class="kb-test">
+    <button id="test-go" class="primary-btn" style="width:100%">开始自检（约 3 秒）</button>
+  </div>
+  <div class="test-summary" id="test-summary"></div>
+  <div class="test-table-wrap" id="test-table"></div>
+</section>
+
+<!-- ============ 知识库 ============ -->
+<section class="view" id="view-kb">
+  <h2 class="sec-title">知识库</h2>
+  <div class="kb-stats" id="kb-stats"></div>
+  <div class="kb-docs" id="kb-docs"></div>
+
+  <h2 class="sec-title">检索测试（看它能不能找到对的那一段）</h2>
+  <p class="sec-desc">用口语问，比如“跳闸了咋整”“电费咋这么贵”。这里会显示命中切片、BM25 分数与出处。</p>
+  <div class="kb-test">
+    <input id="kb-q" type="text" placeholder="输入一个问题，例如：电热毯折叠使用危险吗">
+    <button id="kb-go" class="primary-btn">检索</button>
+  </div>
+  <div class="kb-results" id="kb-results"></div>
+</section>
+
+<!-- ============ 我的 ============ -->
+<section class="view" id="view-mine">
+  <h2 class="sec-title">我的</h2>
+  <div class="mine-card">
+    <div class="mine-row"><b>作品名称</b><span>安心用电 · 长辈居家用电安全与电费防诈助手</span></div>
+    <div class="mine-row"><b>作者</b><span>付家豪 · 202627020323 · 电气工程及其自动化</span></div>
+    <div class="mine-row"><b>课程</b><span>人工智能通识 · 期末个人项目作业</span></div>
+    <div class="mine-row"><b>生成引擎</b><span id="mine-engine">—</span></div>
+    <div class="mine-row"><b>访问地址</b><span id="mine-url">—</span></div>
+  </div>
+
+  <h2 class="sec-title">访问二维码</h2>
+  <p class="sec-desc">手机扫码可直接打开本应用（部署到公网后二维码会自动指向公网地址）。</p>
+  <div class="qr-wrap">
+    <img id="qr-img" alt="访问二维码">
+    <p class="qr-note" id="qr-note"></p>
+  </div>
+
+  <h2 class="sec-title">对话历史</h2>
+  <div class="history-list" id="history-list"></div>
+  <div class="danger-row">
+    <button id="btn-clear" class="ghost-btn">清空本机历史记录</button>
+  </div>
+
+  <h2 class="sec-title">安全与合规说明</h2>
+  <div class="notice-card">
+    <p>1. 本应用提供的是通用用电安全常识与工程估算参考，<b>不替代持证电工的现场检查与供电企业的正式答复</b>。</p>
+    <p>2. 涉及资金与个人信息，请一律走官方渠道：网上国网 APP、95598 供电服务热线、110、96110。</p>
+    <p>3. 本应用不收集您的姓名、住址、身份证号、银行卡号等信息；对话仅保存在本机浏览器与服务器本地文件中，可随时清空。</p>
+    <p>4. 知识库中的标准条文均为公开标准资料的要点归纳，已逐条标注标准号与出处。</p>
+  </div>
+</section>
+
+</main>
+
+<div class="composer" id="composer">
+  <button id="btn-mic" class="icon-btn" title="语音输入">🎤</button>
+  <textarea id="input" rows="1" placeholder="说一句话，比如：我家一用电暖器就跳闸"></textarea>
+  <button id="btn-send" class="send-btn">发送</button>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
